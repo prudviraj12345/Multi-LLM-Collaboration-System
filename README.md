@@ -29,6 +29,12 @@ We also added a browser app to show:
 - Terminal logs
 - Final combined output
 
+Extra project points:
+- Modular code structure (`agents/` and `tasks/`) for easy updates
+- Supports multiple LLM providers using environment variables
+- Beginner-friendly UI for non-technical users
+- Can be deployed online and shared as a live portfolio project
+
 ---
 
 ## Tech Stack
@@ -133,12 +139,3 @@ Use Streamlit Community Cloud:
 - Keep `.env` private
 - Never push API keys to GitHub
 - Rotate your key if exposed
-
----
-
-## Current Status
-
-- Project pushed to GitHub
-- Browser app added
-- Agent-by-agent output visible in UI
-- Ready for portfolio deployment
