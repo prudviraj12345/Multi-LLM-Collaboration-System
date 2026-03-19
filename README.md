@@ -2,6 +2,11 @@
 
 A simple multi-agent AI project built with CrewAI.
 
+## Live Demo
+
+Vercel URL:
+https://vercelapp-ecru-omega.vercel.app
+
 This project takes one user problem and solves it with 4 agents:
 - Research Agent
 - Coding Agent
@@ -11,6 +16,7 @@ This project takes one user problem and solves it with 4 agents:
 You can run it in:
 - Terminal mode (CLI)
 - Browser mode (Streamlit UI)
+- Live mode on Vercel (portfolio link)
 
 ---
 
@@ -29,6 +35,11 @@ We also added a browser app to show:
 - Terminal logs
 - Final combined output
 
+For online deployment, we added a Vercel version with:
+- Static frontend page
+- Serverless API endpoint (`/api/run`)
+- Same 4-agent step-by-step response format
+
 Extra project points:
 - Modular code structure (`agents/` and `tasks/`) for easy updates
 - Supports multiple LLM providers using environment variables
@@ -43,7 +54,9 @@ Extra project points:
 - CrewAI
 - Streamlit
 - python-dotenv
+- Node.js serverless API (for Vercel)
 - Hugging Face API (or OpenAI API)
+- Vercel
 
 ---
 
@@ -53,8 +66,12 @@ Extra project points:
 MultiAgentLLM/
   agents/
   tasks/
+  api/
   main.py
   web_app.py
+  index.html
+  vercel.json
+  vercel_app/
   requirements.txt
   .env
 ```
@@ -125,12 +142,14 @@ http://localhost:8501
 
 ## Deploy Online (Live Link)
 
-Use Streamlit Community Cloud:
-1. Push code to GitHub
-2. Go to https://share.streamlit.io
-3. Select repo and `web_app.py`
-4. Add environment variables in Streamlit settings
-5. Deploy and get your live URL
+Use Vercel:
+1. Open `vercel_app` folder in terminal
+2. Run `vercel --prod`
+3. Add environment variables in Vercel project settings:
+  - `LLM_PROVIDER`
+  - `HUGGINGFACE_API_KEY` (or `OPENAI_API_KEY`)
+  - `HUGGINGFACE_MODEL_NAME` (or `OPENAI_MODEL_NAME`)
+4. Redeploy and use the generated live URL
 
 ---
 

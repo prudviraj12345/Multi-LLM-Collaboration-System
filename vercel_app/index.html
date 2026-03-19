@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-LLM Collaboration System</title>
+  <style>
+    :root {
+      --bg: #f2f8f5;
+      --card: #ffffff;
+      --ink: #14231c;
+      --muted: #4d6258;
+      --accent: #0b8f61;
+      --accent-dark: #066e4a;
+      --line: #d8e7df;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top right, #d7efe3 0%, var(--bg) 60%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(11, 72, 52, 0.08);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    p { margin: 0; color: var(--muted); }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      margin-top: 12px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: var(--accent-dark); }
+    .muted { color: var(--muted); font-size: 0.95rem; }
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      background: #fbfffd;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #13221b;
+      color: #d8fce8;
+      padding: 12px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+    .ok { color: #0a7a54; font-weight: 600; }
+    .err { color: #be2d2d; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>Multi-LLM Collaboration System</h1>
+      <p>Enter a problem and see each agent work step-by-step.</p>
+      <textarea id="problem" placeholder="Example: Create a Python script to validate emails and explain each part."></textarea>
+      <button id="runBtn">Run Agents</button>
+      <p id="status" class="muted" style="margin-top: 8px;"></p>
+    </section>
+
+    <section class="card">
+      <h2>Agent Execution</h2>
+      <div id="steps"></div>
+    </section>
+
+    <section class="card">
+      <h2>Terminal Logs</h2>
+      <pre id="logs">No logs yet.</pre>
+    </section>
+
+    <section class="card">
+      <h2>Final Output</h2>
+      <pre id="final">No output yet.</pre>
+    </section>
+  </main>
+
+  <script>
+    const runBtn = document.getElementById("runBtn");
+    const problem = document.getElementById("problem");
+    const statusEl = document.getElementById("status");
+    const stepsEl = document.getElementById("steps");
+    const logsEl = document.getElementById("logs");
+    const finalEl = document.getElementById("final");
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    runBtn.addEventListener("click", async () => {
+      const text = problem.value.trim();
+      if (!text) {
+        statusEl.className = "err";
+        statusEl.textContent = "Please enter a valid problem statement.";
+        return;
+      }
+
+      statusEl.className = "muted";
+      statusEl.textContent = "Running agents... please wait.";
+      stepsEl.innerHTML = "";
+      logsEl.textContent = "Loading...";
+      finalEl.textContent = "Loading...";
+
+      try {
+        const res = await fetch("/api/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ problem: text })
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          statusEl.className = "err";
+          statusEl.textContent = data.error || "Request failed.";
+          logsEl.textContent = data.terminal_logs || "No logs.";
+          finalEl.textContent = "No final output.";
+          return;
+        }
+
+        statusEl.className = "ok";
+        statusEl.textContent = data.message || "All agents completed successfully.";
+
+        const steps = data.steps || [];
+        if (steps.length === 0) {
+          stepsEl.innerHTML = "<p class='muted'>No step output found.</p>";
+        } else {
+          stepsEl.innerHTML = steps.map((step) => `
+            <div class="step">
+              <h3>Step ${step.step}: ${escapeHtml(step.agent)}</h3>
+              <p class="muted">${escapeHtml(step.description || "")}</p>
+              <pre>${escapeHtml(step.output || "")}</pre>
+            </div>
+          `).join("");
+        }
+
+        logsEl.textContent = data.terminal_logs || "No logs.";
+        finalEl.textContent = data.final_output || "No final output.";
+      } catch (err) {
+        statusEl.className = "err";
+        statusEl.textContent = "Error calling API. Check deployment logs.";
+        logsEl.textContent = String(err);
+        finalEl.textContent = "No final output.";
+      }
+    });
+  </script>
+</body>
+</html>
